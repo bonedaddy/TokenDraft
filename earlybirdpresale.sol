@@ -91,6 +91,7 @@ contract EarlyBird is Administration {
     bool    public  contractLaunched;
     bool    public  earlyBirdClosed;
     bool    public  earlyBirdOver;
+    bool    public  withdrawalsEnabled;
     TokenDraft public tokenContract;
 
     mapping (address => uint256) public balances;
@@ -100,7 +101,8 @@ contract EarlyBird is Administration {
     event ResumeSale(address indexed _invoker, bool indexed _resumed);
     event PauseSale(address indexed _invoker, bool indexed _paused);
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
-    
+    event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
+
     modifier preLaunch() {
         require(!contractLaunched);
         _;
@@ -108,6 +110,11 @@ contract EarlyBird is Administration {
 
     modifier postLaunch() {
         require(contractLaunched);
+        _;
+    }
+
+    modifier withdrawalEnabled() {
+        require(withdrawalsEnabled);
         _;
     }
 
@@ -172,6 +179,42 @@ contract EarlyBird is Administration {
         earlyBirdOver = false;
         balances[this] = earlyBirdReserve;
         LaunchContract(msg.sender, true);
+        return true;
+    }
+
+    function enableWithdrawals()
+        public
+        onlyAdmin
+        returns (bool _enabled)
+    {
+        withdrawalsEnabled = true;
+        return true;
+    }
+
+    function broadcastWithdrawal(address _backer)
+        public
+        onlyAdmin
+        withdrawalEnabled
+        returns (bool _withdrawn)
+    {
+        require(balances[_backer] > 0);
+        uint256 _rewardAmount = balances[_backer];
+        balances[_backer] = 0;
+        tokenContract.transfer(_backer, _rewardAmount);
+        TokenTransfer(this, msg.sender, _rewardAmount);
+        return true;
+    }
+
+    function withdrawFAN()
+        public
+        withdrawalEnabled
+        returns (bool _withdrawn)
+    {
+        require(balances[msg.sender] > 0);
+        uint256 _rewardAmount = balances[msg.sender];
+        balances[msg.sender] = 0;
+        tokenContract.transfer(msg.sender, _rewardAmount);
+        TokenTransfer(this, msg.sender, _rewardAmount);
         return true;
     }
 
