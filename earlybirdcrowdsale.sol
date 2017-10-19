@@ -77,7 +77,7 @@ contract Administration {
 
 }
 
-contract EarlyBirdPresale is Administration {
+contract EarlyBirdCrowdsale is Administration {
     using SafeMath for uint256;
 
     address public  hotWallet;
@@ -119,17 +119,17 @@ contract EarlyBirdPresale is Administration {
         _;
     }
 
-    function EarlyBirdPresale(address _tokenContractAddress, address _hotWallet) {
+    function EarlyBirdCrowdsale(address _tokenContractAddress, address _hotWallet) {
         tokenContract = TokenDraft(_tokenContractAddress);
         tokenContractAddress = _tokenContractAddress;
         hotWallet = _hotWallet;
         contractLaunched = false;
         earlyBirdClosed = true;
         tokenSold = 0;
-        earlyBirdReserve = 75000000000000000000000000;  // 75 Mil in wei 
-        tokensRemaining = 75000000000000000000000000;   // 75 mil in wei
-        tokenCostInWei = 400000000000000;             // $0.153 in wei
-        minContributionAmount = 150000000000000000000000; // $25,000 in wei
+        earlyBirdReserve = 75000000000000000000000000;  
+        tokensRemaining = 75000000000000000000000000;  
+        tokenCostInWei = 625000000000000;             
+        minContributionAmount = 50000000000000000000000; 
     }
 
     function() payable {
@@ -175,7 +175,7 @@ contract EarlyBirdPresale is Administration {
         preLaunch
         returns (bool launched)
     {
-        endOfEarlyBird = now + 10 days;
+        endOfEarlyBird = now + 31 days;
         contractLaunched = true;
         earlyBirdClosed = false;
         earlyBirdOver = false;
