@@ -1,4 +1,4 @@
-pragma solidity 0.4.17;
+pragma solidity 0.4.16;
 
 interface TokenDraft {
 
@@ -102,6 +102,7 @@ contract EarlyBird is Administration {
     event PauseSale(address indexed _invoker, bool indexed _paused);
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
     event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
+    event EthRefund(address indexed _backer, uint256 _ethAmount, bool indexed _ethRefunded);
 
     modifier preLaunch() {
         require(!contractLaunched);
@@ -120,13 +121,14 @@ contract EarlyBird is Administration {
 
     function EarlyBird(address _tokenContractAddress, address _hotWallet) {
         tokenContract = TokenDraft(_tokenContractAddress);
+        tokenContractAddress = _tokenContractAddress;
         hotWallet = _hotWallet;
         contractLaunched = false;
         earlyBirdClosed = true;
         tokenSold = 0;
-        earlyBirdReserve = 178571430000000000000000;  // 178571.43 in wei
-        tokensRemaining = earlyBirdReserve;
-        tokenCostInWei = 400000000000000;             // $0.14 in wei
+        earlyBirdReserve = 75000000000000000000000000;  // 75 Mil in wei 
+        tokensRemaining = 75000000000000000000000000;   // 75 mil in wei
+        tokenCostInWei = 500000000000000;             // $0.153 in wei
         minContributionAmount = 81250000000000000000; // $25,000 in wei
     }
 
@@ -137,7 +139,7 @@ contract EarlyBird is Administration {
         require(!earlyBirdOver);
         require(contractLaunched);
         require(!earlyBirdClosed);
-        contribute(msg.sender, msg.value);
+        contribute(msg.sender);
     }
 
     /// @notice Used to pause the presale if trouble arises
@@ -218,6 +220,17 @@ contract EarlyBird is Administration {
         return true;
     }
 
+    function withdrawETH()
+        public
+        returns (bool _withdrawn)
+    {
+        require(ethBalances[msg.sender] >= 0);
+        uint256 _ethAmount = ethBalances[msg.sender];
+        ethBalances[msg.sender] = 0;
+        msg.sender.transfer(_ethAmount);
+        EthRefund(msg.sender, _ethAmount, true);
+        return true;
+    }
     function contributionCheck(address _backer, uint256 _msgValue)
         private
         constant
@@ -229,12 +242,12 @@ contract EarlyBird is Administration {
         return true;
     }
 
-    function contribute(address _backer, uint256 _msgValue)
+    function contribute(address _backer)
         payable
         returns (bool contributed)
     {
-        require(contributionCheck(_backer, _msgValue));
-        uint256 _amountFAN = _msgValue.div(tokenCostInWei);
+        require(contributionCheck(_backer, msg.value));
+        uint256 _amountFAN = msg.value.div(tokenCostInWei);
         uint256 amountFAN = _amountFAN.mul(1 ether);
         uint256 amountCharged;
         uint256 amountRefund;
@@ -242,7 +255,7 @@ contract EarlyBird is Administration {
             amountFAN = tokensRemaining;
             uint256 _amountCharged = _amountFAN.mul(tokenCostInWei);
             amountCharged = _amountCharged.div(1 ether);
-            amountRefund = _msgValue.sub(amountCharged);
+            amountRefund = msg.value.sub(amountCharged);
         }
         if (amountRefund > 0) {
             ethBalances[_backer] = ethBalances[_backer].add(amountRefund);

@@ -1,4 +1,4 @@
-pragma solidity 0.4.17;
+pragma solidity 0.4.16;
 
 // implement safemath as a library
 library SafeMath {
