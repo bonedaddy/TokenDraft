@@ -145,7 +145,7 @@ contract EarlyBirdPresale is Administration {
         require(!earlyBirdClosed);
         require(contribute(msg.sender));
     }
-
+    /*
     /// @notice Experimental, not fully tested
     function autoWithdraw()
         public
@@ -160,11 +160,10 @@ contract EarlyBirdPresale is Administration {
             balances[backer] = 0;
             tokenContract.transfer(backer, _rewardAmount);
             TokenTransfer(this, backer, _rewardAmount);
-            return true;
         }
         return true;
     }
-    
+    */
     function logBtcContribution(string _email, uint256 _amountFAN)
         public
         onlyAdmin
