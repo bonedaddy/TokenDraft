@@ -170,6 +170,8 @@ contract EarlyBirdPresale is Administration {
         returns (bool _btcContributionLogged)
     {
         require(_amountFAN > 0);
+        require(tokensRemaining > 0);
+        require(_amountFAN <= tokensRemaining);
         bytes32 email = sha3(_email);
         require(balances[this].sub(_amountFAN) >= 0);
         require(btcBalances[email].add(_amountFAN) > btcBalances[email]);
