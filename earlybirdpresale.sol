@@ -164,6 +164,7 @@ contract EarlyBirdPresale is Administration {
         }
         return true;
     }
+    
     function logBtcContribution(string _email, uint256 _amountFAN)
         public
         onlyAdmin
