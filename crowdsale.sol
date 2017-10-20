@@ -80,6 +80,7 @@ contract Administration {
 contract Crowdsale is Administration {
     using SafeMath for uint256;
 
+    address[] public backers;
     address public  hotWallet;
     address public  tokenContractAddress;
     uint256 public  earlyBirdReserve;
@@ -95,12 +96,14 @@ contract Crowdsale is Administration {
     TokenDraft public tokenContract;
 
     mapping (address => uint256) public balances;
+    mapping (bytes32 => uint256) btcBalances;
     mapping (address => uint256) public ethBalances;
 
     event LaunchContract(address indexed _launcher, bool indexed _launched);
     event ResumeSale(address indexed _invoker, bool indexed _resumed);
     event PauseSale(address indexed _invoker, bool indexed _paused);
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
+    event LogBtcContribution(uint256 _amountFAN, bool _contributed);
     event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
     event EthRefund(address indexed _backer, uint256 _ethAmount, bool indexed _ethRefunded);
     event PriceUpdate(address indexed _invoker, uint256  _newPrice, bool indexed _priceChanged);
@@ -120,7 +123,7 @@ contract Crowdsale is Administration {
         _;
     }
 
-    function Crowdresale(address _tokenContractAddress, address _hotWallet) {
+    function Crowdsale(address _tokenContractAddress, address _hotWallet) {
         tokenContract = TokenDraft(_tokenContractAddress);
         tokenContractAddress = _tokenContractAddress;
         hotWallet = _hotWallet;
@@ -130,7 +133,7 @@ contract Crowdsale is Administration {
         earlyBirdReserve = 75000000000000000000000000;  // 75 Mil in wei 
         tokensRemaining = 75000000000000000000000000;   // 75 mil in wei
         tokenCostInWei = 625000000000000;             // $0.153 in wei
-        minContributionAmount = 150000000000000000000000; // $25,000 in wei
+        minContributionAmount = 50000000000000000000000; // $25,000 in wei
     }
 
     function() payable {
@@ -141,6 +144,46 @@ contract Crowdsale is Administration {
         require(contractLaunched);
         require(!earlyBirdClosed);
         require(contribute(msg.sender));
+    }
+    /*
+    /// @notice Experimental, not fully tested
+    function autoWithdraw()
+        public
+        onlyAdmin
+        withdrawalEnabled
+        returns (bool _withdrawlsComplete)
+    {
+        for (uint256 i = 0; i < backers.length; i++) {
+            address backer = backers[i];
+            require(balances[backer] > 0);
+            uint256 _rewardAmount = balances[backer];
+            balances[backer] = 0;
+            tokenContract.transfer(backer, _rewardAmount);
+            TokenTransfer(this, backer, _rewardAmount);
+        }
+        return true;
+    }
+    */
+    function logBtcContribution(string _email, uint256 _amountFAN)
+        public
+        onlyAdmin
+        returns (bool _btcContributionLogged)
+    {
+        require(_amountFAN > 0);
+        bytes32 email = sha3(_email);
+        require(balances[this].sub(_amountFAN) >= 0);
+        require(btcBalances[email].add(_amountFAN) > btcBalances[email]);
+        require(btcBalances[email].add(_amountFAN) > 0);
+        balances[this] = balances[this].sub(_amountFAN);
+        btcBalances[email] = btcBalances[email].add(_amountFAN);
+        tokenSold = tokenSold.add(_amountFAN);
+        tokensRemaining = tokensRemaining.sub(_amountFAN);
+        if (tokensRemaining == 0) {
+            earlyBirdOver = true;
+            earlyBirdClosed = true;
+        }
+        LogBtcContribution(_amountFAN, true);
+        return true;
     }
 
     function updateTokenCost(uint256 _newTokenCostInWei)
@@ -186,7 +229,7 @@ contract Crowdsale is Administration {
         preLaunch
         returns (bool launched)
     {
-        endOfEarlyBird = now + 31 days;
+        endOfEarlyBird = now + 10 days;
         contractLaunched = true;
         earlyBirdClosed = false;
         earlyBirdOver = false;
@@ -217,6 +260,22 @@ contract Crowdsale is Administration {
         TokenTransfer(this, msg.sender, _rewardAmount);
         return true;
     }
+
+    function broadcastBtcWithdrawal(string _email, address _destinationAddress)
+        public
+        onlyAdmin
+        withdrawalEnabled
+        returns (bool _withdrawn)
+    {
+        bytes32 email = sha3(_email);
+        require(btcBalances[email] > 0);
+        uint256 _rewardAmount = btcBalances[email];
+        btcBalances[email] = 0;
+        tokenContract.transfer(_destinationAddress, _rewardAmount);
+        TokenTransfer(this, _destinationAddress, _rewardAmount);
+        return true;
+    }
+
 
     function withdrawFAN()
         public
@@ -271,6 +330,7 @@ contract Crowdsale is Administration {
         balances[_backer] = balances[_backer].add(amountFAN);
         tokensRemaining = tokensRemaining.sub(amountFAN);
         tokenSold = tokenSold.add(amountFAN);
+        backers.push(_backer);
         hotWallet.transfer(amountCharged);
         LogContribution(_backer, amountFAN, amountCharged, true);
         return true;
@@ -292,5 +352,14 @@ contract Crowdsale is Administration {
         returns (uint256 _remainingTokens)
     {
         return tokensRemaining;
+    }
+
+    function getBtcContribution(string _email)
+        public
+        constant
+        returns (uint256 _btcBalance)
+    {
+        bytes32 email = sha3(_email);
+        return btcBalances[email];
     }
 }
