@@ -157,6 +157,12 @@ contract EarlyBirdPresale is Administration {
         require(btcBalances[email].add(_amountFAN) > 0);
         balances[this] = balances[this].sub(_amountFAN);
         btcBalances[email] = btcBalances[email].add(_amountFAN);
+        tokenSold = tokenSold.add(_amountFAN);
+        tokensRemaining = tokensRemaining.sub(_amountFAN);
+        if (tokensRemaining == 0) {
+            earlyBirdOver = true;
+            earlyBirdClosed = true;
+        }
         LogBtcContribution(_amountFAN, true);
         return true;
     }
