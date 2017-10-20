@@ -77,7 +77,7 @@ contract Administration {
 
 }
 
-contract EarlyBirdCrowdsale is Administration {
+contract EarlyBirdPresale is Administration {
     using SafeMath for uint256;
 
     address public  hotWallet;
@@ -103,6 +103,7 @@ contract EarlyBirdCrowdsale is Administration {
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
     event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
     event EthRefund(address indexed _backer, uint256 _ethAmount, bool indexed _ethRefunded);
+    event PriceUpdate(address indexed _invoker, uint256  _newPrice, bool indexed _priceChanged);
 
     modifier preLaunch() {
         require(!contractLaunched);
@@ -119,17 +120,17 @@ contract EarlyBirdCrowdsale is Administration {
         _;
     }
 
-    function EarlyBirdCrowdsale(address _tokenContractAddress, address _hotWallet) {
+    function EarlyBirdPresale(address _tokenContractAddress, address _hotWallet) {
         tokenContract = TokenDraft(_tokenContractAddress);
         tokenContractAddress = _tokenContractAddress;
         hotWallet = _hotWallet;
         contractLaunched = false;
         earlyBirdClosed = true;
         tokenSold = 0;
-        earlyBirdReserve = 75000000000000000000000000;  
-        tokensRemaining = 75000000000000000000000000;  
-        tokenCostInWei = 625000000000000;             
-        minContributionAmount = 50000000000000000000000; 
+        earlyBirdReserve = 75000000000000000000000000;  // 75 Mil in wei 
+        tokensRemaining = 75000000000000000000000000;   // 75 mil in wei
+        tokenCostInWei = 625000000000000;             // $0.153 in wei
+        minContributionAmount = 150000000000000000000000; // $25,000 in wei
     }
 
     function() payable {
@@ -139,9 +140,19 @@ contract EarlyBirdCrowdsale is Administration {
         require(!earlyBirdOver);
         require(contractLaunched);
         require(!earlyBirdClosed);
-        contribute(msg.sender);
+        require(contribute(msg.sender));
     }
 
+    function updateTokenCost(uint256 _newTokenCostInWei)
+        public
+        onlyAdmin
+        returns (bool _priceChanged)
+    {
+        require(_newTokenCostInWei > 0);
+        tokenCostInWei = _newTokenCostInWei;
+        PriceUpdate(msg.sender, _newTokenCostInWei, true);
+        return true;
+    }
     /// @notice Used to pause the presale if trouble arises
     function resumeEarlyBird()
         public
@@ -175,7 +186,7 @@ contract EarlyBirdCrowdsale is Administration {
         preLaunch
         returns (bool launched)
     {
-        endOfEarlyBird = now + 31 days;
+        endOfEarlyBird = now + 10 days;
         contractLaunched = true;
         earlyBirdClosed = false;
         earlyBirdOver = false;

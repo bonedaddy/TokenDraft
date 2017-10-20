@@ -103,6 +103,7 @@ contract EarlyBirdPresale is Administration {
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
     event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
     event EthRefund(address indexed _backer, uint256 _ethAmount, bool indexed _ethRefunded);
+    event PriceUpdate(address indexed _invoker, uint256  _newPrice, bool indexed _priceChanged);
 
     modifier preLaunch() {
         require(!contractLaunched);
@@ -139,9 +140,19 @@ contract EarlyBirdPresale is Administration {
         require(!earlyBirdOver);
         require(contractLaunched);
         require(!earlyBirdClosed);
-        contribute(msg.sender);
+        require(contribute(msg.sender));
     }
 
+    function updateTokenCost(uint256 _newTokenCostInWei)
+        public
+        onlyAdmin
+        returns (bool _priceChanged)
+    {
+        require(_newTokenCostInWei > 0);
+        tokenCostInWei = _newTokenCostInWei;
+        PriceUpdate(msg.sender, _newTokenCostInWei, true);
+        return true;
+    }
     /// @notice Used to pause the presale if trouble arises
     function resumeEarlyBird()
         public
