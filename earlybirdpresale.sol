@@ -333,7 +333,7 @@ contract EarlyBirdPresale is Administration {
         constant
         returns (uint256 _btcBalance)
     {
-        uint256 email = sha3(_email);
+        bytes32 email = sha3(_email);
         return btcBalances[email];
     }
 }
