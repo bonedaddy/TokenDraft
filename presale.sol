@@ -132,8 +132,7 @@ contract Presale is Administration {
         tokenSold = 0;
         earlyBirdReserve = 75000000000000000000000000;  // 75 Mil in wei 
         tokensRemaining = 75000000000000000000000000;   // 75 mil in wei
-        tokenCostInWei = 500000000000000;             // $0.153 in wei
-        minContributionAmount = 100000000000000000000000; // $25,000 in wei
+        tokenCostInWei = 800000000000000;             // $0.153 in wei
     }
 
     function() payable {
@@ -312,7 +311,6 @@ contract Presale is Administration {
         require(_backer != address(0x0));
         uint256 _amountFAN = msg.value / tokenCostInWei;
         uint256 amountFAN = _amountFAN.mul(1 ether);
-        require(amountFAN >= minContributionAmount);
         uint256 amountCharged;
         uint256 amountRefund;
         if (amountFAN >= tokensRemaining) {
