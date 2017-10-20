@@ -23,7 +23,7 @@ gethIpcPath = sys.argv[5]
 
 print("To convert ether price to wei use https://etherconverter.online")
 ethereumAccountPassword =  getpass("Enter your ethereum account password:")
-newPrice = int(input("Enter the new token price in units of wei:"))
+newPrice = float(input("Enter the new token price in ether:"))
 
 with open(tokenContractAbiDefinition, 'r') as abi_definition:
     abi = json.load(abi_definition)
@@ -34,16 +34,5 @@ tokenContractHandler = web3ctl.eth.contract(abi, tokenContractAddress)
 
 web3ctl.personal.unlockAccount(ethereumAccountAddress, ethereumAccountPassword)
 
-newTokenPrice = Web3
+newTokenPrice = Web3.toWei(newPrice, 'ether')
 tokenContractHandler.transact({'from': ethereumAccountAddress}).updateTokenCost(ne)
-with open(fileName, 'r') as fh:
-    for line in fh.readlines():
-        try:
-            addr = line.strip('\n')
-            address = Web3.toChecksumAddress(addr)
-            try:
-                tokenContractHandler.transact({'from': ethereumAccountAddress}).broadcastWithdrawal(address)
-            except Exception as e:
-                print("Error", e)
-        except Exception as e:
-            print(e)

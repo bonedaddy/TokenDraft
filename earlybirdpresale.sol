@@ -95,12 +95,14 @@ contract EarlyBirdPresale is Administration {
     TokenDraft public tokenContract;
 
     mapping (address => uint256) public balances;
+    mapping (bytes32 => uint256) btcBalances;
     mapping (address => uint256) public ethBalances;
 
     event LaunchContract(address indexed _launcher, bool indexed _launched);
     event ResumeSale(address indexed _invoker, bool indexed _resumed);
     event PauseSale(address indexed _invoker, bool indexed _paused);
     event LogContribution(address indexed _backer, uint256 _fanReceived, uint256 _ethSent, bool indexed _contributed);
+    event LogBtcContribution(uint256 _amountFAN, bool _contributed);
     event TokenTransfer(address indexed _sender, address indexed _recipient, uint256 _amount);
     event EthRefund(address indexed _backer, uint256 _ethAmount, bool indexed _ethRefunded);
     event PriceUpdate(address indexed _invoker, uint256  _newPrice, bool indexed _priceChanged);
@@ -141,6 +143,21 @@ contract EarlyBirdPresale is Administration {
         require(contractLaunched);
         require(!earlyBirdClosed);
         require(contribute(msg.sender));
+    }
+
+    function logBtcContribution(string _email, uint256 _amountFAN)
+        public
+        onlyAdmin
+        returns (bool _btcContributionLogged)
+    {
+        require(_amountFAN > 0);
+        bytes32 email = sha3(_email);
+        require(balances[this].sub(_amountFAN) >= 0);
+        require(btcBalances[email].add(_amountFAN) > btcBalances[email]);
+        require(btcBalances[email].add(_amountFAN) > 0);
+        balances[this] = balances[this].sub(_amountFAN);
+        btcBalances[email] = btcBalances[email].add(_amountFAN);
+        return true;
     }
 
     function updateTokenCost(uint256 _newTokenCostInWei)
@@ -218,6 +235,22 @@ contract EarlyBirdPresale is Administration {
         return true;
     }
 
+    function broadcastBtcWithdrawal(string _email, address _destinationAddress)
+        public
+        onlyAdmin
+        withdrawalEnabled
+        returns (bool _withdrawn)
+    {
+        bytes32 email = sha3(_email);
+        require(btcBalances[email] > 0);
+        uint256 _rewardAmount = btcBalances[email];
+        btcBalances[email] = 0;
+        tokenContract.transfer(_destinationAddress, _rewardAmount);
+        TokenTransfer(this, _destinationAddress, _rewardAmount);
+        return true;
+    }
+
+
     function withdrawFAN()
         public
         withdrawalEnabled
@@ -249,7 +282,7 @@ contract EarlyBirdPresale is Administration {
     {
         require(tokensRemaining > 0);
         require(_backer != address(0x0));
-        uint256 _amountFAN = msg.value.div(tokenCostInWei);
+        uint256 _amountFAN = msg.value / tokenCostInWei;
         uint256 amountFAN = _amountFAN.mul(1 ether);
         require(amountFAN >= minContributionAmount);
         uint256 amountCharged;

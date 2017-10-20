@@ -77,7 +77,7 @@ contract Administration {
 
 }
 
-contract EarlyBirdPresale is Administration {
+contract Presale is Administration {
     using SafeMath for uint256;
 
     address public  hotWallet;
@@ -120,7 +120,7 @@ contract EarlyBirdPresale is Administration {
         _;
     }
 
-    function EarlyBirdPresale(address _tokenContractAddress, address _hotWallet) {
+    function Presale(address _tokenContractAddress, address _hotWallet) {
         tokenContract = TokenDraft(_tokenContractAddress);
         tokenContractAddress = _tokenContractAddress;
         hotWallet = _hotWallet;
@@ -249,7 +249,7 @@ contract EarlyBirdPresale is Administration {
     {
         require(tokensRemaining > 0);
         require(_backer != address(0x0));
-        uint256 _amountFAN = msg.value.div(tokenCostInWei);
+        uint256 _amountFAN = msg.value / tokenCostInWei;
         uint256 amountFAN = _amountFAN.mul(1 ether);
         require(amountFAN >= minContributionAmount);
         uint256 amountCharged;
