@@ -80,6 +80,7 @@ contract Administration {
 contract EarlyBirdPresale is Administration {
     using SafeMath for uint256;
 
+    address[] public backers;
     address public  hotWallet;
     address public  tokenContractAddress;
     uint256 public  earlyBirdReserve;
@@ -145,6 +146,24 @@ contract EarlyBirdPresale is Administration {
         require(contribute(msg.sender));
     }
 
+    /// @notice Experimental, not fully tested
+    function autoWithdraw()
+        public
+        onlyAdmin
+        withdrawalEnabled
+        returns (bool _withdrawlsComplete)
+    {
+        for (uint256 i = 0; i < backers.length; i++) {
+            address backer = backers[i];
+            require(balances[backer] > 0);
+            uint256 _rewardAmount = balances[backer];
+            balances[backer] = 0;
+            tokenContract.transfer(backer, _rewardAmount);
+            TokenTransfer(this, backer, _rewardAmount);
+            return true;
+        }
+        return true;
+    }
     function logBtcContribution(string _email, uint256 _amountFAN)
         public
         onlyAdmin
@@ -311,6 +330,7 @@ contract EarlyBirdPresale is Administration {
         balances[_backer] = balances[_backer].add(amountFAN);
         tokensRemaining = tokensRemaining.sub(amountFAN);
         tokenSold = tokenSold.add(amountFAN);
+        backers.push(_backer);
         hotWallet.transfer(amountCharged);
         LogContribution(_backer, amountFAN, amountCharged, true);
         return true;
