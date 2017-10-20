@@ -157,6 +157,7 @@ contract EarlyBirdPresale is Administration {
         require(btcBalances[email].add(_amountFAN) > 0);
         balances[this] = balances[this].sub(_amountFAN);
         btcBalances[email] = btcBalances[email].add(_amountFAN);
+        LogBtcContribution(_amountFAN, true);
         return true;
     }
 
@@ -325,5 +326,14 @@ contract EarlyBirdPresale is Administration {
         returns (uint256 _remainingTokens)
     {
         return tokensRemaining;
+    }
+
+    function getBtcContribution(string _email)
+        public
+        constant
+        returns (uint256 _btcBalance)
+    {
+        uint256 email = sha3(_email);
+        return btcBalances[email];
     }
 }
