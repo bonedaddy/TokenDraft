@@ -1,6 +1,6 @@
-# Crowdfunding/Presale Token Deployment Guide:
+# Early Bird Presale, Presale, Early Bird Crowdsale, Crowdsale Deployment steps
 
-1) When deploying the contract to the blockchain pass in two pieces of information:
+1) When deploying the sale contract to the blockchain pass in two pieces of information:
 	> Address of the token contract
 	> Address of a wallet to store funds raised during the sale
 
