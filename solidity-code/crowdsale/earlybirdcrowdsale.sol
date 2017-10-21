@@ -170,7 +170,7 @@ contract EarlyBirdCrowdsale is Administration {
         require(_amountFAN > 0); // check that value passed in is greater than 0
         require(tokensRemaining > 0); // ensure there are enough tokens left
         require(_amountFAN <= tokensRemaining); // ensure that the amount is <= to total supply
-        bytes32 email = sha3(_email); // generate checksum of email address
+        bytes32 email = keccak256(_email); // generate checksum of email address
         require(balances[this].sub(_amountFAN) >= 0); 
         require(btcBalances[email].add(_amountFAN) > btcBalances[email]);
         require(btcBalances[email].add(_amountFAN) > 0);
@@ -277,7 +277,7 @@ contract EarlyBirdCrowdsale is Administration {
         withdrawalEnabled
         returns (bool _withdrawn)
     {
-        bytes32 email = sha3(_email); // generate checksum of email
+        bytes32 email = keccak256(_email); // generate checksum of email
         require(btcBalances[email] > 0); // check that the balance for checksum is greater than 0
         uint256 _rewardAmount = btcBalances[email]; // set reward amount
         btcBalances[email] = 0; // empty balance to prevent reentrancy
@@ -375,7 +375,7 @@ contract EarlyBirdCrowdsale is Administration {
         constant
         returns (uint256 _btcBalance)
     {
-        bytes32 email = sha3(_email);
+        bytes32 email = keccak256(_email);
         return btcBalances[email];
     }
 }
