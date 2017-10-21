@@ -79,7 +79,6 @@ contract TokenDraft is Administration {
     uint8   public decimals;
     string  public symbol;
     string  public name;
-    bool    public contractLaunched;
 
     mapping (address => uint256) public balances;
     mapping (address => mapping (address => uint256)) public allowed;
@@ -94,7 +93,6 @@ contract TokenDraft is Administration {
         decimals = 18;
         name = "TokenDraft";
         symbol = "FAN";
-        contractLaunched = false;
         balances[owner] = totalSupply;
     }
 
