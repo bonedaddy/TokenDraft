@@ -1,8 +1,8 @@
 # Early Bird Presale, Presale, Early Bird Crowdsale, Crowdsale Deployment steps
 
 1) When deploying the sale contract to the blockchain pass in two pieces of information:
-	> Address of the token contract
-	> Address of a wallet to store funds raised during the sale
+	* Address of the token contract
+	* Address of a wallet to store funds raised during the sale
 
 2) Once the contract is deployed on the blockchain, send the tokens to be sold during the sale to the contract address.
 
