@@ -142,10 +142,9 @@ contract Crowdsale is Administration {
         contractLaunched = false;
         earlyBirdClosed = true;
         tokenSold = 0;
-        earlyBirdReserve = 75000000000000000000000000;
-        tokensRemaining = 75000000000000000000000000;
-        tokenCostInWei = 625000000000000;
-        minContributionAmount = 50000000000000000000000;
+        earlyBirdReserve = 75000000000000000000000000; 
+        tokensRemaining = 75000000000000000000000000; 
+        tokenCostInWei = 800000000000000;
     }
 
     /// @notice Fallback function ,executed when contract receives ether
