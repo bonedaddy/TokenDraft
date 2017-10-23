@@ -1,4 +1,4 @@
-pragma solidity 0.4.16;
+pragma solidity 0.4.18;
 
 // Defines the interface used to interact with the token contraact
 interface TokenDraft {
