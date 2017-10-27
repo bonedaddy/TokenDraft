@@ -83,8 +83,8 @@ contract TokenDraft is Administration {
     mapping (address => uint256) public balances;
     mapping (address => mapping (address => uint256)) public allowed;
     
-    event Transfer(address indexed _sender, address indexed _recipient, uint256 indexed _amount);
-    event Approval(address indexed _owner, address indexed _spender, uint256 indexed _allowance);
+    event Transfer(address indexed _sender, address indexed _recipient, uint256 _amount);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
     event BurnTokens(address indexed _burner, uint256 indexed _amountBurned, bool indexed _burned);
 
     function TokenDraft() {
