@@ -35,4 +35,4 @@ tokenContractHandler = web3ctl.eth.contract(abi, tokenContractAddress)
 web3ctl.personal.unlockAccount(ethereumAccountAddress, ethereumAccountPassword)
 
 newTokenPrice = Web3.toWei(newPrice, 'ether')
-tokenContractHandler.transact({'from': ethereumAccountAddress}).updateTokenCost(ne)
+tokenContractHandler.transact({'from': ethereumAccountAddress}).updateTokenCost(newTokenPrice)
