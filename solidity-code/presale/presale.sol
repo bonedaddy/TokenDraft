@@ -9,23 +9,23 @@ interface TokenDraft {
 // implement safemath as a library
 library SafeMath {
 
-  function mul(uint256 a, uint256 b) internal constant returns (uint256) {
+  function mul(uint256 a, uint256 b) internal pure  returns (uint256) {
     uint256 c = a * b;
     require(a == 0 || c / a == b);
     return c;
   }
 
-  function div(uint256 a, uint256 b) internal constant returns (uint256) {
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a / b;
     return c;
   }
 
-  function sub(uint256 a, uint256 b) internal constant returns (uint256) {
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b <= a);
     return a - b;
   }
 
-  function add(uint256 a, uint256 b) internal constant returns (uint256) {
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
     require(c >= a);
     return c;
@@ -87,8 +87,6 @@ contract Administration {
 contract Presale is Administration {
     // Use safemath for uint256
     using SafeMath for uint256;
-
-    address[] public backers; // stores a list of backers
     address public  hotWallet; // hotwallet which will store ether raised
     address public  tokenContractAddress; // address of the token contract
     uint256 public  earlyBirdReserve; // number of tokens available in sale
@@ -150,13 +148,9 @@ contract Presale is Administration {
 
     /// @notice Fallback function ,executed when contract receives ether
     function() payable {
-        require(!earlyBirdOver);
         if (now > endOfEarlyBird) { // check to see if current time is past deadline
             earlyBirdOver = true; // if so set to sale to over
         }
-        require(contractLaunched);
-        require(!earlyBirdClosed);
-        require(contribute(msg.sender));
     }
 
     /// @notice Used to log a contribution made via btc, only usable by owner or moderator
@@ -264,7 +258,6 @@ contract Presale is Administration {
         uint256 _rewardAmount = balances[_backer]; // set reward amount
         balances[_backer] = 0; // empty balance, preventing reentrancy
         tokenContract.transfer(_backer, _rewardAmount); // transfer tokens to backer
-        TokenTransfer(this, msg.sender, _rewardAmount); // notify blockchain of token transfer
         return true;
     }
 
@@ -282,7 +275,6 @@ contract Presale is Administration {
         uint256 _rewardAmount = btcBalances[email]; // set reward amount
         btcBalances[email] = 0; // empty balance to prevent reentrancy
         tokenContract.transfer(_destinationAddress, _rewardAmount); // transfer tokens
-        TokenTransfer(this, _destinationAddress, _rewardAmount); // notify blockchain of token transfer
         return true;
     }
 
@@ -296,7 +288,6 @@ contract Presale is Administration {
         uint256 _rewardAmount = balances[msg.sender]; // set reward amount
         balances[msg.sender] = 0; // Empty balance to prevent reentrancy
         tokenContract.transfer(msg.sender, _rewardAmount); // Send tokens to backer
-        TokenTransfer(this, msg.sender, _rewardAmount); // Notify blockchain of transfer
         return true;
     }
 
@@ -310,7 +301,6 @@ contract Presale is Administration {
         uint256 _ethAmount = ethBalances[msg.sender]; // Set eth amount
         ethBalances[msg.sender] = 0; // empty balance to prevent reentrancy
         msg.sender.transfer(_ethAmount); // Send the ether to backer
-        EthRefund(msg.sender, _ethAmount, true); // notify blockchain of ether refund
         return true;
     }
 
@@ -321,6 +311,10 @@ contract Presale is Administration {
         payable
         returns (bool contributed)
     {
+        require(!earlyBirdOver);
+        require(contractLaunched);
+        require(!earlyBirdClosed);
+        require(contribute(msg.sender));
         require(msg.sender == _backer); // requires that the _backer param is set to msg.sender
         require(tokensRemaining > 0); // require tokens remaining greater than 0
         require(_backer != address(0x0)); // ensure address isn't empty
@@ -346,7 +340,6 @@ contract Presale is Administration {
         balances[_backer] = balances[_backer].add(amountFAN);
         tokensRemaining = tokensRemaining.sub(amountFAN);
         tokenSold = tokenSold.add(amountFAN);
-        backers.push(_backer);
         hotWallet.transfer(amountCharged);
         LogContribution(_backer, amountFAN, amountCharged, true);
         return true;
@@ -356,7 +349,7 @@ contract Presale is Administration {
 
     function getTokenSold()
         public
-        constant
+        view
         returns (uint256 _tokenSold)
     {
         return tokenSold;
@@ -364,7 +357,7 @@ contract Presale is Administration {
 
     function getRemainingTokens()
         public
-        constant
+        view
         returns (uint256 _remainingTokens)
     {
         return tokensRemaining;
@@ -372,7 +365,7 @@ contract Presale is Administration {
 
     function getBtcContribution(string _email)
         public
-        constant
+        view
         returns (uint256 _btcBalance)
     {
         bytes32 email = keccak256(_email);

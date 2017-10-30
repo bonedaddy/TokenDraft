@@ -3,23 +3,23 @@ pragma solidity 0.4.18;
 // implement safemath as a library
 library SafeMath {
 
-  function mul(uint256 a, uint256 b) internal constant returns (uint256) {
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a * b;
     require(a == 0 || c / a == b);
     return c;
   }
 
-  function div(uint256 a, uint256 b) internal constant returns (uint256) {
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a / b;
     return c;
   }
 
-  function sub(uint256 a, uint256 b) internal constant returns (uint256) {
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b <= a);
     return a - b;
   }
 
-  function add(uint256 a, uint256 b) internal constant returns (uint256) {
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
     require(c >= a);
     return c;
@@ -50,20 +50,20 @@ contract Administration {
         _; // function code inserted here
     }
 
-    function transferOwnership(address _newOwner) onlyOwner returns (bool success) {
+    function transferOwnership(address _newOwner) public onlyOwner returns (bool success) {
         owner = _newOwner;
         return true;
         
     }
 
-    function addModerator(address _newMod) onlyOwner returns (bool added) {
+    function addModerator(address _newMod) public onlyOwner returns (bool added) {
         require(_newMod != address(0x0));
         moderators[_newMod] = true;
         AddMod(msg.sender, _newMod, true);
         return true;
     }
     
-    function removeModerator(address _removeMod) onlyOwner returns (bool removed) {
+    function removeModerator(address _removeMod) public onlyOwner returns (bool removed) {
         require(_removeMod != address(0x0));
         moderators[_removeMod] = false;
         RemoveMod(msg.sender, _removeMod, true);
@@ -97,6 +97,7 @@ contract TokenDraft is Administration {
     }
 
     function tokenBurn(uint256 _amountBurn)
+        public
         onlyAdmin
         returns (bool burned)
     {
@@ -112,7 +113,7 @@ contract TokenDraft is Administration {
 
     function transferCheck(address _sender, address _recipient, uint256 _amount)
         private
-        constant
+        view
         returns (bool valid)
     {
         require(_amount > 0);
@@ -162,7 +163,7 @@ contract TokenDraft is Administration {
 
     function balanceOf(address _tokenHolder)
         public
-        constant
+        view
         returns (uint256 _balance)
     {
         return balances[_tokenHolder];
@@ -170,7 +171,7 @@ contract TokenDraft is Administration {
 
     function allowance(address _owner, address _spender)
         public
-        constant
+        view
         returns (uint256 _allowance)
     {
         return allowed[_owner][_spender];
@@ -178,7 +179,7 @@ contract TokenDraft is Administration {
 
     function totalSupply()
         public
-        constant
+        view
         returns (uint256 _totalSupply)
     {
         return totalSupply;
